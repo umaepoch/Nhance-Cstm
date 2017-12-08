@@ -85,7 +85,7 @@ def make_quotation(source_name, target_doc=None):
 	
 	company = boq_record.company
 
-	boq_record_items = frappe.db.sql("""select boqi.item as boq_item, boq.customer as customer, boqi.qty as qty, boqi.price as price, boqi.selling_price as amount, boqi.markup as markup from `tabBill of Quantity` boq, `tabBill of Quantity Item` boqi where boqi.parent = %s and boq.name = boqi.parent and boqi.print_in_quotation = 1 """ , (boq_record.name), as_dict=1)
+	boq_record_items = frappe.db.sql("""select boqi.item_code as boq_item, boq.customer as customer, boqi.qty as qty, boqi.price as price, boqi.selling_price as amount, boqi.markup as markup from `tabBill of Quantity` boq, `tabBill of Quantity Item` boqi where boqi.parent = %s and boq.name = boqi.parent and boqi.print_in_quotation = 1 """ , (boq_record.name), as_dict=1)
 
 	if boq_record_items:
 		newJson = {
