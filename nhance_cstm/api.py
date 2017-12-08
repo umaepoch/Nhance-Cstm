@@ -78,58 +78,99 @@ def set_missing_values(source, target_doc):
 
 
 @frappe.whitelist()
+
+def make_quotation(source_name, target_doc=None):
+
+	boq_record = frappe.get_doc("Bill of Quantity", source_name)
+	
+	company = boq_record.company
+
+	boq_record_items = frappe.db.sql("""select boqi.item as boq_item, boq.customer as customer, boqi.qty as qty, boqi.price as price, boqi.selling_price as amount, boqi.markup as markup from `tabBill of Quantity` boq, `tabBill of Quantity Item` boqi where boqi.parent = %s and boq.name = boqi.parent and boqi.print_in_quotation = 1 """ , (boq_record.name), as_dict=1)
+
+	if boq_record_items:
+		newJson = {
+				"company": company,
+				"doctype": "Quotation",
+				"customer": boq_record.customer,
+				"items": [
+				]
+				}
+	
+		for record in boq_record_items:
+			item = record.boq_item
+			qty = record.qty
+			if item:
+				item_record = frappe.get_doc("Item", item)
+
+				innerJson =	{
+					"doctype": "Quotation Item",
+					"item_code": item,
+					"description": item_record.description,
+					"uom": item_record.stock_uom,
+					"qty": qty,
+					"rate": record.amount
+
+					}
+		
+				newJson["items"].append(innerJson)
+
+		doc = frappe.new_doc("Quotation")
+		doc.update(newJson)
+		doc.save()
+		frappe.db.commit()
+		docname = doc.name
+		frappe.msgprint(_("Quotation Created - " + docname))
+			
+	else:				
+		frappe.throw(_("There are no Quotations to be created."))
+		
+
+@frappe.whitelist()
 def make_bom(source_name, target_doc=None):
 
-	quot_record = frappe.get_doc("Quotation", source_name)
-	
+	boq_record = frappe.get_doc("Bill of Quantity", source_name)
+	set_bom_level(boq_record)
+	company = boq_record.company
+	max_bom_level = frappe.db.sql("""select max(bom_level) from `tabBill of Quantity Item`""")
+	x = 1
+	bom_level = int(max_bom_level[0][0])
+	for x in xrange(bom_level, 0, -1):
+		boq_record_items = frappe.db.sql("""select distinct boqi.immediate_parent_item as bom_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = %s order by boqi.immediate_parent_item""" , (boq_record.name, x), as_dict=1)
 
-	company = quot_record.company
-	single_bom = 0
-
-	project = frappe.db.sql("""select distinct so.project from `tabSales Order` so, `tabSales Order Item` si where si.parent = so.name and si.prevdoc_docname = %s""", (quot_record.name))
-	if project:
-		project_id = project[0][0]
-		quot_record_items = frappe.db.sql("""select qi.item_code as qi_item, qi.qty as qty, qi.grouping as qi_group from `tabQuotation Item` qi where qi.parent = %s and qi.create_bom = 1 and bom_level = 2 order by qi.grouping""" , (quot_record.name), as_dict=1)
-
-		if quot_record_items:
-
+		if boq_record_items:
 						
-			for quot_record_item in quot_record_items:
-				bom_main_item = quot_record_item.qi_item
-				bom_qty = quot_record_item.qty
-				grouping = quot_record_item.qi_group
+			for boq_record_item in boq_record_items:
+				bom_main_item = boq_record_item.bom_item
+				bom_qty = 1
 
-				quot_record_bom_items = frappe.db.sql("""select qi.item_code as qi_item, qi.qty as qty from `tabQuotation Item` qi where qi.parent = %s and qi.create_bom = 0 and qi.grouping = %s and qi.display_in_quotation = 0 order by qi.item_code""" , (quot_record.name, grouping), as_dict=1)
+				boq_record_bom_items = frappe.db.sql("""select boqi.item_code as qi_item, boqi.qty as qty, boqi.part_of_despatch_list as pod from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s and boqi.bom_level = %s order by boqi.item_code""" , (boq_record.name, bom_main_item, x), as_dict=1)
 			
-				if quot_record_bom_items:
+				if boq_record_bom_items:
 					
 					newJson = {
 					"company": company,
 					"doctype": "BOM",
 					"item": bom_main_item,
 					"quantity": bom_qty,
-					"project": project_id,
 					"items": [
 					]
 					}
 					
-					for record in quot_record_bom_items:
+					for record in boq_record_bom_items:
 						item = record.qi_item
 						qty = record.qty
-
+						pod_list = record.pod
 						if item:
 							item_record = frappe.get_doc("Item", item)
-
-			
-			
+		
 							innerJson =	{
 								"doctype": "BOM Item",
 								"item_code": item,
 								"description": item_record.description,
 								"uom": item_record.stock_uom,
-								"qty": qty
-	
-						
+								"qty": qty,
+								"part_of_despatch_list": pod_list
+				
 								}
 		
 							newJson["items"].append(innerJson)
@@ -144,75 +185,68 @@ def make_bom(source_name, target_doc=None):
 
 				else:
 					frappe.msgprint(_("There are no BOM Items present in the quotation. Could not create a BOM for this Item."))
-					
-		else:
-			single_bom = 1
 
-		quot_record_items1 = frappe.db.sql("""select qi.item_code as qi_item, qi.qty as qty, qi.grouping as qi_group from `tabQuotation Item` qi where qi.parent = %s and qi.create_bom = 1 and bom_level = 1 order by qi.grouping""" , (quot_record.name), as_dict=1)
-		if quot_record_items1:
-	
-			for quot_record_item in quot_record_items1:
-				bom_main_item = quot_record_item.qi_item
-				bom_qty = quot_record_item.qty
-				grouping = quot_record_item.qi_group
 
-				if single_bom == 1:
 
-					quot_record_bom_items = frappe.db.sql("""select qi.item_code as qi_item, qi.qty as qty from `tabQuotation Item` qi where qi.parent = %s and qi.create_bom = 0 and qi.display_in_quotation = 0 order by qi.item_code""" , (quot_record.name), as_dict=1)
-				else:
-					quot_record_bom_items = frappe.db.sql("""select qi.item_code as qi_item, qi.qty as qty from `tabQuotation Item` qi where qi.parent = %s and ((qi.create_bom = 1 and qi.display_in_quotation = 0 and bom_level = 2) or (qi.create_bom = 0 and grouping = %s and qi.item_code != "Control Panel") or (qi.create_bom = 0 and grouping = "" and qi.display_in_quotation = 0)) order by qi.item_code""" , (quot_record.name, grouping), as_dict=1)
+def set_bom_level(boq_record):
 
-				if quot_record_bom_items:
-					
-					newJson = {
-					"company": company,
-					"doct2ype": "BOM",
-					"item": bom_main_item,
-					"quantity": bom_qty,
-					"project": project_id,
-					"items": [
-					]
-					}
-					
-					for record in quot_record_bom_items:
-						item = record.qi_item
-						qty = record.qty
+	boq_record_items = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, boq_record.item), as_dict=1)
+	if boq_record_items:
+		for row in boq_record_items:
+			bom_record_level1 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level1:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "1" where boqi.parent = %s and boqi.immediate_parent_item = %s""", (boq_record.name, boq_record.item))
 
-						if item:
-							item_record = frappe.get_doc("Item", item)
 
-			
-			
-							innerJson =	{
-								"doctype": "BOM Item",
-								"item_code": item,
-								"description": item_record.description,
-								"uom": item_record.stock_uom,
-								"qty": qty
-	
-						
-								}
-		
-							newJson["items"].append(innerJson)
+	boq_record_items2 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 1""" , (boq_record.name), as_dict=1)
+	if boq_record_items2:
+		for row in boq_record_items2:
+			bom_record_level2 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level2:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "2" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
 
-					doc = frappe.new_doc("BOM")
-					doc.update(newJson)
-					doc.save()
-					frappe.db.commit()
-					doc.submit()
-					docname = doc.name
-					frappe.msgprint(_("BOM Created - " + docname))
+	boq_record_items3 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 2""" , (boq_record.name), as_dict=1)
+	if boq_record_items3:
+		for row in boq_record_items3:
+			bom_record_level3 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level3:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "3" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
 
-				else:
-					frappe.msgprint(_("There are no BOM Items present in the quotation. Could not create a BOM for this Item."))
-					
-		else:
-				frappe.throw(_("There are no BOMs to be created."))
+	boq_record_items4 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 3""" , (boq_record.name), as_dict=1)
+	if boq_record_items4:
+		for row in boq_record_items4:
+			bom_record_level4 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level4:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "4" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
 
-		
-	else:
-		frappe.msgprint(_("Please create Sales Order and Project before creating BOM"))
-	
+	boq_record_items5 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 4""" , (boq_record.name), as_dict=1)
+	if boq_record_items5:
+		for row in boq_record_items5:
+			bom_record_level5 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level5:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "5" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
+
+	boq_record_items6 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 5""" , (boq_record.name), as_dict=1)
+	if boq_record_items6:
+		for row in boq_record_items6:
+			bom_record_level6 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level6:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "6" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
+							
+
+	boq_record_items7 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 6""" , (boq_record.name), as_dict=1)
+	if boq_record_items7:
+		for row in boq_record_items7:
+			bom_record_level7 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level7:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "7" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
+
+	boq_record_items8 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.bom_level = 7""" , (boq_record.name), as_dict=1)
+	if boq_record_items8:
+		for row in boq_record_items8:
+			bom_record_level8 = frappe.db.sql("""select boqi.item_code, boqi.immediate_parent_item from `tabBill of Quantity Item` boqi where boqi.parent = %s and boqi.immediate_parent_item = %s""" , (boq_record.name, row.item_code), as_dict=1)
+			for record in bom_record_level8:
+				frappe.db.sql("""update `tabBill of Quantity Item` boqi set boqi.bom_level = "8" where boqi.parent = %s and boqi.item_code = %s and boqi.immediate_parent_item = %s""", (boq_record.name, record.item_code, record.immediate_parent_item))
 
 @frappe.whitelist()
 def make_cust_project(source_name, target_doc=None):
