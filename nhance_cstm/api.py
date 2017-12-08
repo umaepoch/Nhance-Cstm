@@ -28,12 +28,12 @@ def make_proposal_stage(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_interactions(source_name, target_doc=None):
-	
+
 	target_doc = get_mapped_doc("Opportunity", source_name, {
 		"Opportunity": {
 			"doctype": "Interactions",
 			"field_map": {
-				"name": "reference_document",
+				"name": "opportunity",
 				"doctype": "reference_doctype"
 				}
 		}
@@ -47,6 +47,38 @@ def make_interactions_quot(source_name, target_doc=None):
 	src_name = "Quotation"
 	target_doc = get_mapped_doc("Quotation", source_name, {
 		"Quotation": {
+			"doctype": "Interactions",
+			"field_map": {
+				"name": "quotation",
+				"doctype": "reference_doctype"
+				}
+		}
+		
+	}, target_doc, set_missing_values)
+
+	return target_doc
+
+@frappe.whitelist()
+def make_interactions_so(source_name, target_doc=None):
+	src_name = "Sales Order"
+	target_doc = get_mapped_doc("Sales Order", source_name, {
+		"Sales Order": {
+			"doctype": "Interactions",
+			"field_map": {
+				"name": "sales_order",
+				"doctype": "reference_doctype"
+				}
+		}
+		
+	}, target_doc, set_missing_values)
+
+	return target_doc
+
+@frappe.whitelist()
+def make_interactions_si(source_name, target_doc=None):
+	src_name = "Sales Invoice"
+	target_doc = get_mapped_doc("Sales Invoice", source_name, {
+		"Sales Invoice": {
 			"doctype": "Interactions",
 			"field_map": {
 				"name": "reference_document",
