@@ -132,7 +132,7 @@ def get_item_map(filters):
 				
         	                })
 
-        	        qty_dict = iwb_map[(d.inter.name, d.item)]
+        	        qty_dict = iwb_map[(d.inter_name, d.item)]
 			qty_dict.reference = d.reference
                		qty_dict.item_name = d.item_name
         	        qty_dict.qty = d.qty
@@ -157,7 +157,7 @@ def get_item_map(filters):
 				
         	                })
 
-        	        qty_dict = iwb_map[(d.inter.name, d.item)]
+        	        qty_dict = iwb_map[(d.inter_name, d.item)]
 			qty_dict.reference = d.reference
 
              		qty_dict.item_name = d.item_name
@@ -183,7 +183,7 @@ def get_item_map(filters):
 				
         	                })
 
-        	        qty_dict = iwb_map[(d.inter.name, d.item)]
+        	        qty_dict = iwb_map[(d.inter_name, d.item)]
 			qty_dict.reference = d.reference
 
                         qty_dict.item_name = d.item_name
@@ -209,7 +209,7 @@ def get_item_map(filters):
 				
         	                })
 
-        	        qty_dict = iwb_map[(d.inter.name, d.item)]
+        	        qty_dict = iwb_map[(d.inter_name, d.item)]
 			qty_dict.reference = d.reference
 
                         qty_dict.item_name = d.item_name        
@@ -235,7 +235,7 @@ def get_item_map(filters):
 				
         	                })
 
-        	        qty_dict = iwb_map[(d.inter.name, d.item)]
+        	        qty_dict = iwb_map[(d.inter_name, d.item)]
 			qty_dict.reference = d.reference
 
                		qty_dict.item_name = d.item_name               
