@@ -32,7 +32,7 @@ def execute(filters=None):
 	
 
         for (inter_name, item) in sorted(iwb_map):
-                qty_dict = iwb_map[(reference, item)]
+                qty_dict = iwb_map[(inter_name, item)]
                 data.append([
                         qty_dict.date, inter_name, qty_dict.customer, qty_dict.short_description, qty_dict.first_name, qty_dict.last_name, qty_dict.city, qty_dict.mobile_no, qty_dict.email_id, qty_dict.doctype, qty_dict.reference, item, qty_dict.item_name, qty_dict.qty, qty_dict.complete_description
                         
