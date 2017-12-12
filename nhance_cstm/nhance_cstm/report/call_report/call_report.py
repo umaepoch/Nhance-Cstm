@@ -107,7 +107,7 @@ def get_int_details_opp(filters):
 def get_int_details_opp2(filters):
 	conditions = get_conditions(filters)
 	
-        return frappe.db.sql("""Select inter.name as inter_name, inter.date as date, inter.customer as customer, inter.city as city, first_name as first_name, last_name as last_name, mobile_no as mobile, inter.email_id as email, inter.opportunity as reference, " " as item, , " " as item_name, " " as qty, inter.short_description, inter.complete_description, inter.reference_doctype as doctype from `tabInteractions` inter, `tabDynamic Link` dy, `tabOpportunity` op where inter.customer = dy.link_name and inter.opportunity = op.name and inter.docstatus != "2" and op.with_items = "0"  %s """ % conditions, as_dict=1)
+        return frappe.db.sql("""Select inter.name as inter_name, inter.date as date, inter.customer as customer, inter.city as city, first_name as first_name, last_name as last_name, mobile_no as mobile, inter.email_id as email, inter.opportunity as reference, " " as item, " " as item_name, " " as qty, inter.short_description, inter.complete_description, inter.reference_doctype as doctype from `tabInteractions` inter, `tabDynamic Link` dy, `tabOpportunity` op where inter.customer = dy.link_name and inter.opportunity = op.name and inter.docstatus != "2" and op.with_items = "0"  %s """ % conditions, as_dict=1)
 
 def get_int_details(filters):
         conditions = get_conditions(filters)
