@@ -431,11 +431,12 @@ def make_PurchaseOrder(args,tax_template):
 			account_head = acc_head.name
 
 	tax_Rate_List = get_Sales_Taxes_and_Charges(account_head)
-	#print "tax_Rate_List::", tax_Rate_List
-	#print "tax_Rate_List::", tax_Rate_List[0]['charge_type']
-	charge_type = tax_Rate_List[0]['charge_type']
-	rate = tax_Rate_List[0]['rate']
-	description = tax_Rate_List[0]['description']
+	if tax_Rate_List is not None and len(tax_Rate_List) != 0:
+		#print "tax_Rate_List::", tax_Rate_List
+		#print "tax_Rate_List::", tax_Rate_List[0]['charge_type']
+		charge_type = tax_Rate_List[0]['charge_type']
+		rate = tax_Rate_List[0]['rate']
+		description = tax_Rate_List[0]['description']
 
 	outerJson_Transfer = {
 					"doctype": "Purchase Order",
@@ -489,12 +490,3 @@ def make_PurchaseOrder(args,tax_template):
 	if ret:
 		return ret
 		
-
-
-
-	
-
-
-
-
-
