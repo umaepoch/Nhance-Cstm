@@ -60,7 +60,7 @@ def get_columns():
                 _("Reference Number")+"::100",
 		_("Item Code")+"::100",
 		_("Item Name")+"::100",
-	        _("Qty")+":Float:100",
+	        _("Qty")+"::100",
 		_("Complete Description")+"::140"
        	       
           ]
@@ -107,7 +107,7 @@ def get_int_details_opp(filters):
 def get_int_details(filters):
         conditions = get_conditions(filters)
 	
-        return frappe.db.sql("""Select inter.name as inter_name, inter.date, inter.customer, inter.city, first_name, last_name, mobile_no as mobile, inter.email_id as email, " " as reference, " " as item, " " as item_name, 0 as qty, inter.short_description, inter.complete_description, "" as doctype from `tabInteractions` inter, `tabDynamic Link` dy where inter.customer = dy.link_name and inter.opportunity is NULL and inter.quotation is NULL and inter.sales_order is NULL and inter.sales_invoice is NULL and inter.docstatus != "2" %s """ % conditions, as_dict=1)
+        return frappe.db.sql("""Select inter.name as inter_name, inter.date, inter.customer, inter.city, first_name, last_name, mobile_no as mobile, inter.email_id as email, " " as reference, " " as item, " " as item_name, " " as qty, inter.short_description, inter.complete_description, "" as doctype from `tabInteractions` inter, `tabDynamic Link` dy where inter.customer = dy.link_name and inter.opportunity is NULL and inter.quotation is NULL and inter.sales_order is NULL and inter.sales_invoice is NULL and inter.docstatus != "2" %s """ % conditions, as_dict=1)
 
 
 
