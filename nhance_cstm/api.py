@@ -107,3 +107,17 @@ def set_proposal_stage_values(opportunity):
 def set_missing_values(source, target_doc):
 	target_doc.run_method("set_missing_values")
 	target_doc.run_method("calculate_taxes_and_totals")
+
+@frappe.whitelist()
+def get_contact(customer):
+	contact = frappe.db.sql("""select con.name from `tabContact` con, `tabDynamic Link` dy where dy.link_name = %s and dy.parent = con.name""", (customer))
+	
+	return contact
+
+
+@frappe.whitelist()
+def get_address(customer):
+	address = frappe.db.sql("""select ad.name from `tabAddress` ad, `tabDynamic Link` dy where dy.link_name = %s and dy.parent = ad.name""", (customer))
+
+	return address
+	
