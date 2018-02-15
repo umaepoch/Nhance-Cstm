@@ -50,7 +50,6 @@ frappe.query_reports["BOM Item Warehouse"] = {
             "default": "Y"
 
         },
-	
 	{
 	    "fieldname": "current_stock_balance",
             "label": __("Current Stock Balance to be considered?"),
@@ -109,7 +108,7 @@ frappe.query_reports["BOM Item Warehouse"] = {
                   frappe.throw(" Quantity to Make should be greater than one")
                 }
                 return frappe.call({
-                    method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
+                    method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
                     args: {
                         "bomno": frappe.query_report_filters_by_name.bom.get_value()
                     },
@@ -182,7 +181,7 @@ frappe.query_reports["BOM Item Warehouse"] = {
 		
 
 	         return frappe.call({
-        	     method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.make_stock_requisition",
+        	     method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.make_stock_requisition",
         	     args: {
         	         "args": status,
 			 "planning_warehouse": planning_warehouse,

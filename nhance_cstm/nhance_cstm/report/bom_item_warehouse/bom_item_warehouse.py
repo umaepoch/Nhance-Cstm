@@ -1,7 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
-
 from __future__ import unicode_literals
 import frappe
 from frappe import _, msgprint
@@ -52,6 +51,7 @@ def execute(filters=None):
 	item_count = 0
 	total_delta_qty = 0
 	tot_bal_qty = 0
+	tot_p_bal_qty = 0
 	reqd_qty = 0
 	p_reqd_qty = 0
 	tot_bi_qty = 0
@@ -74,7 +74,10 @@ def execute(filters=None):
 				conv_factor = convert_factor[0][0]
 			else:
 				conv_factor = 1
-
+		bal_qty = qty_dict.bal_qty
+		bal_qty_puom = bal_qty/conv_factor
+		#bal_qty_puom = 0.5
+		
 		if bi_item != " ":
 			data.append([
 							bom,
@@ -92,6 +95,7 @@ def execute(filters=None):
  							bi_item,
 							qty_dict.qty_to_make,
 							conv_factor,
+							bal_qty_puom,
 						])
 		else:
 
@@ -111,6 +115,7 @@ def execute(filters=None):
 							bi_item, 
 							qty_dict.qty_to_make,
 							conv_factor,
+							bal_qty_puom,
 						])
 
 
@@ -120,6 +125,7 @@ def execute(filters=None):
 		if item_prev == item_work:
 			item_count = item_count + 1
 			tot_bal_qty =float(tot_bal_qty + rows[7])
+			tot_p_bal_qty = float(tot_p_bal_qty + rows[15])
 			reqd_qty = (rows[8] / rows[11]) * flt(rows[13])
 			p_reqd_qty = reqd_qty / rows[14]
 			tot_bi_qty = rows[8]
@@ -127,10 +133,9 @@ def execute(filters=None):
 			tot_p_reqd_qty = p_reqd_qty
 			if check_for_whole_number_itemwise(item_work):
 				tot_reqd_qty = math.ceil(tot_reqd_qty)
-				tot_p_reqd_qty = math.ceil(tot_p_reqd_qty)
-
+				#tot_p_reqd_qty = math.ceil(tot_p_reqd_qty)
 			summ_data.append([rows[0], rows[1], rows[11], rows[2],
-		rows[3], rows[4], rows[5], rows[6], rows[12], " ", " ", rows[7], " ", " ", " ", rows[9], rows[14]
+		rows[3], rows[4], rows[5], rows[6], rows[12], " ", " ", rows[7], " ", " ", rows[15], " ", rows[9], rows[14]
 			])
 		if (item_prev != item_work or loop_count == len(data)):
 			if item_count > 1:
@@ -140,15 +145,20 @@ def execute(filters=None):
 				data_array[9] = " "
 				data_array[10] = " "
 				data_array[12] = " "
+				data_array[13] = " "
+				data_array[15] = " "
 				#tot_bal_qty = tot_bal_qty + rows[6]
 				total_delta_qty = tot_reqd_qty - tot_bal_qty
-				total_p_delta_qty = tot_p_reqd_qty - (tot_bal_qty / rows[14])
+				total_p_delta_qty = tot_p_reqd_qty - tot_p_bal_qty
+				print "############-total_p_delta_qty::", total_p_delta_qty
 				if total_delta_qty < 0:
 					total_delta_qty = 0
 					total_p_delta_qty = 0
+				#tot_p_reqd_qty = 10.71
+				#tot_p_bal_qty = 53.9
 				summ_data.append([rows[0], " ", " ", data_array[3], " ", data_array[5], data_array[6], data_array[7], data_array[8],
 				tot_bi_qty, round(tot_reqd_qty,2),
-				tot_bal_qty, round(total_delta_qty,2), round(tot_p_reqd_qty,2), round(total_p_delta_qty,2), " ", rows[14]
+				tot_bal_qty, round(total_delta_qty,2), round(tot_p_reqd_qty,2), tot_p_bal_qty, round(total_p_delta_qty,2), " ", data_array[17]
 				])
 			if item_prev != item_work:
 				item_count = 1
@@ -156,17 +166,19 @@ def execute(filters=None):
 				p_reqd_qty = reqd_qty / rows[14]
 				if check_for_whole_number_itemwise(item_work):
 					reqd_qty = math.ceil(reqd_qty)
-					p_reqd_qty = math.ceil(p_reqd_qty)
+					#p_reqd_qty = math.ceil(p_reqd_qty)
 				tot_bal_qty = rows[7]
+				tot_p_bal_qty = rows[15]
 				total_delta_qty = reqd_qty - tot_bal_qty
-				total_p_delta_qty = p_reqd_qty - (tot_bal_qty / rows[14])
+				total_p_delta_qty = p_reqd_qty - tot_p_bal_qty
 				if total_delta_qty < 0:
 					total_delta_qty = 0
 					total_p_delta_qty = 0
-
+				#p_reqd_qty = 5.8
+				#tot_p_bal_qty = 53.9
 				summ_data.append([rows[0], rows[1], rows[11], rows[2],
 				rows[3], rows[4],
-				rows[5], rows[6], rows[12], rows[8],round(reqd_qty,2) ,tot_bal_qty,round(total_delta_qty,2), round(p_reqd_qty,2), round(total_p_delta_qty,2), rows[9],rows[14]
+				rows[5], rows[6], rows[12], rows[8],round(reqd_qty,2) ,tot_bal_qty,round(total_delta_qty,2), round(p_reqd_qty,2), tot_p_bal_qty, round(total_p_delta_qty,2), rows[9], rows[14]
 				])
 		item_prev = item_work
 		loop_count = loop_count + 1
@@ -194,6 +206,7 @@ def get_columns():
 		_("Balance Qty")+":Float:100",
 		_("Delta Qty")+"::100",
 		_("Required Qty(P UoM)")+"::100",
+		_("Balance Qty(P UoM)")+":Float:100",
 		_("Delta Qty(P UoM)")+"::100",
 		_("Warehouse")+"::100",
 		_("Conversion Factor")+"::100"
@@ -445,10 +458,9 @@ def check_for_whole_number(bomno):
 def check_for_whole_number_itemwise(item):
 	return (frappe.db.sql("""select must_be_whole_number from `tabUOM` where name IN (select stock_uom from `tabItem`where name = %s) """, (item))[0][0])
 
-
-
-
-
+def get_Uom_Data(purchase_uom):
+	must_be_whole_number = frappe.db.sql("""select must_be_whole_number  from `tabUOM` where uom_name = %s """, (purchase_uom), as_dict=1)
+	return must_be_whole_number
 
 
 @frappe.whitelist()
@@ -500,26 +512,22 @@ def make_stock_requisition(args, planning_warehouse, required_date, reference_no
 	whse_map = {}
 	empty_desc = []
 	empty_uom = []
-
-
+	round_off_purchase = "up"
+	round_off_transfer = "down"
 	for rows in summ_data:
 		required = str(rows[10]).strip()
-		if required and rows[11] and planning_warehouse != (rows[15]) :
-
+		if required and rows[11] and planning_warehouse != (rows[16]) :
 			if whse_map:
 				if whse_map.get(planning_warehouse):
 					if rows[10] > whse_map.get(planning_warehouse):
-
 						rows[10] = rows[10] - whse_map.get(planning_warehouse)
-
 						#rows[9] = required
 						rows[11] = rows[11] - whse_map.get(planning_warehouse)
 					else:
 						rows[10] = 0
 				whse_map.clear()
-
-
-
+			purchase_uom = rows[7]
+			uom_details = get_Uom_Data(purchase_uom)
 			if rows[10]:
 				if rows[3] == "<br>" or rows[3] == "<div><br></div>" or str(rows[3]) == "":
 					empty_desc.append(rows[7])
@@ -527,44 +535,90 @@ def make_stock_requisition(args, planning_warehouse, required_date, reference_no
 					empty_uom.append(rows[8])
 				no_transfer = no_transfer + 1
 				if rows[10] < rows[11]:
-					innerJson_transfer =	{
-				"doctype": "Stock Requisition Item",
-				"item_code": rows[8],
-				"qty": rows[10],
-				"schedule_date": required_date,
-				"warehouse":planning_warehouse,
-				"uom": rows[7],
-				"stock_uom": rows[6],
-				"conversion_factor":rows[16],
-				"description": rows[3]
-				   }
+					if len(uom_details)!=0:
+						must_be_whole_number = uom_details[0]['must_be_whole_number']
+						if must_be_whole_number == 1:
+							req_qty_puom = float(rows[13])
+							re_qty_puom_round_up = math.ceil(req_qty_puom)
+							bal_qty_puom = float(rows[14])
+							if bal_qty_puom < re_qty_puom_round_up:
+								tmp_round_off = "down"
+							else:
+								tmp_round_off = "up"
+ 							check_qty = math.floor(req_qty_puom) 
+							check_qty = req_qty_puom - check_qty
+							if check_qty != 0.0:
+								if tmp_round_off == "up":
+									quantity = math.ceil(req_qty_puom)
+									quantity = int(quantity)
+								else:
+									quantity = int(req_qty_puom)
+									purchase_qty_puom = req_qty_puom - quantity
+									print "==========purchase_qty_puom===",purchase_qty_puom
+									rows[15] = purchase_qty_puom
+							else:
+								quantity = int(req_qty_puom)
+						else:
+							quantity = rows[13]
+					if quantity > 0:
+						innerJson_transfer ={
+						"doctype": "Stock Requisition Item",
+						"item_code": rows[8],
+						"qty": quantity,
+						"schedule_date": required_date,
+						"warehouse":planning_warehouse,
+						"uom": rows[7],
+						"stock_uom": rows[6],
+						"conversion_factor":rows[17],
+						"description": rows[3]
+				   		}
+						newJson_transfer["items"].append(innerJson_transfer)
 
 				if rows[10] >= rows[11]:
-					innerJson_transfer =	{
-				"doctype": "Stock Requisition Item",
-				"item_code": rows[8],
-				"qty": rows[11],
-				"schedule_date": required_date,
-				"warehouse":planning_warehouse,
-				"uom":rows[7],
-				"stock_uom": rows[6],
-				"conversion_factor":rows[16],
-				"description": rows[3]
-				   }
-				newJson_transfer["items"].append(innerJson_transfer)
+					balance_qty = rows[14]
+					if len(uom_details)!=0:
+						must_be_whole_number = uom_details[0]['must_be_whole_number']
+						if must_be_whole_number == 1:
+							balance_qty = float(balance_qty)
+ 							check_qty = math.floor(balance_qty) 
+							check_qty = balance_qty - check_qty
+							if check_qty != 0.0:
+								if round_off_transfer == "up":
+									quantity = math.ceil(balance_qty)
+									quantity = int(quantity)
+								else:
+									quantity = int(balance_qty)
+							else:
+								quantity = int(balance_qty)
+						else:
+							quantity = balance_qty
+					if quantity > 0:
+						innerJson_transfer =	{
+						"doctype": "Stock Requisition Item",
+						"item_code": rows[8],
+						"qty": quantity,
+						"schedule_date": required_date,
+						"warehouse":planning_warehouse,
+						"uom":rows[7],
+						"stock_uom": rows[6],
+						"conversion_factor":rows[17],
+						"description": rows[3]
+				   		}
+						newJson_transfer["items"].append(innerJson_transfer)
 		else:
 			if str(rows[15]).strip():
 				whse_map[(rows[15])] = rows[11]
 
 	if no_transfer == 0:
 		frappe.msgprint("Planning Warehouse has all the item !! Stock transfer is not required")
-	else:
+	elif curr_stock_balance == 1:
 		if empty_uom:
 			frappe.throw(_("UOM for  {0} is empty,Please add UOM in Item Master Doctype.").format(frappe.bold(comma_and(empty_uom))))
 		if empty_desc:
 			frappe.throw(_("Description for  {0} is empty,Please add description in Item Master Doctype.").format(frappe.bold(comma_and(empty_desc))))
 		doc = frappe.new_doc("Stock Requisition")
 		doc.update(newJson_transfer)
+		print "####################-newJson_transfer::", newJson_transfer
 		if args == "as a draft":
 			doc.save()
 		else:
@@ -572,32 +626,51 @@ def make_stock_requisition(args, planning_warehouse, required_date, reference_no
 		ret = doc.doctype
 
 
-
+	
 	for rows in summ_data:
 
 		if curr_stock_balance == 1:
-			delta_qty = str(rows[12]).strip()
+			delta_qty = str(rows[15]).strip()
 		else:
-			delta_qty = str(rows[10]).strip()
-
+			delta_qty = str(rows[13]).strip()
+		
 		if (delta_qty and float(delta_qty) != 0.0):
 			if rows[3] == "<br>" or rows[3] == "<div><br></div>" or str(rows[3]) == "":
 				empty_desc.append(rows[8])
 			if rows[6] == "":
 				empty_uom.append(rows[8])
 			no_requisition = no_requisition + 1
-			innerJson_requisition =	{
-		"doctype": "Stock Requisition Item",
-		"item_code": rows[8],
-		"qty": float(delta_qty),
-		"schedule_date": required_date,
-		"warehouse":planning_warehouse,
-		"uom":rows[7],
-		"conversion_factor":rows[16],
-		"description": rows[3]
-		   }
+			purchase_uom = rows[7]
+			uom_details = get_Uom_Data(purchase_uom)
+			if len(uom_details)!=0:
+				must_be_whole_number = uom_details[0]['must_be_whole_number']
+				if must_be_whole_number == 1:
+					delta_qty = float(delta_qty)
+ 					check_qty = math.floor(delta_qty) 
+					check_qty = delta_qty - check_qty
+					if check_qty != 0.0:
+						if round_off_purchase == "up":
+							quantity = math.ceil(delta_qty)
+							quantity = int(quantity)
+						else:
+							quantity = int(delta_qty)
+					else:
+						quantity = int(delta_qty)
+				else:
+					quantity = delta_qty
+			if quantity > 0:
+				innerJson_requisition =	{
+				"doctype": "Stock Requisition Item",
+				"item_code": rows[8],
+				"qty": float(quantity),
+				"schedule_date": required_date,
+				"warehouse":planning_warehouse,
+				"uom":rows[7],
+				"conversion_factor":rows[17],
+				"description": rows[3]
+		   		}
 
-			newJson_requisition["items"].append(innerJson_requisition)
+				newJson_requisition["items"].append(innerJson_requisition)
 	del summ_data[:]
 	del required
 	del test_whole_number
