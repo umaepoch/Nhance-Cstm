@@ -338,7 +338,7 @@
    "label": "Competition Status", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Proman Only\nIn Competition", 
+   "options": "\nIn Competition", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
