@@ -55,7 +55,7 @@ frappe.query_reports["Items To Be Requested From Stock Requistion"] = {
 	//alert("### makePurchaseOrder::");
      if (filters.warehouse) {
          return frappe.call({
-             method: "nhance.nhance.report.items_to_be_requested_from_stock_requistion.items_to_be_requested_from_stock_requistion.make_Purchase_Items",
+             method: "nhance_cstm.nhance_cstm.report.items_to_be_requested_from_stock_requistion.items_to_be_requested_from_stock_requistion.make_Purchase_Items",
              args: {
                  "args": status
              },
