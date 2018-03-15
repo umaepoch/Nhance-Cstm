@@ -326,7 +326,6 @@ def making_PurchaseOrder_For_SupplierItems(args, company, tax_template):
 					"item_code": items_List[i]['item_code'],
 					"stock_uom": items_List[i]['stock_uom'],
 					"uom": items_List[i]['purchase_uom'],
-					"price_list_rate": items_List[i]['price'],
 					"stock_qty": items_List[i]['stock_qty'],
 					"doctype": "Purchase Order Item",
 					"parenttype": "Purchase Order",
@@ -342,7 +341,7 @@ def making_PurchaseOrder_For_SupplierItems(args, company, tax_template):
 	doc.save()
 	ret = doc.doctype
 	if ret:
-		frappe.msgprint("Purchase Orders is Created:"+doc.name)
+		frappe.msgprint("Purchase Order is Created:"+doc.name)
 
 @frappe.whitelist()
 def make_request_for_quotation(source_name, target_doc=None):
