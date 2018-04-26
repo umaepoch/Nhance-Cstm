@@ -87,7 +87,7 @@ frappe.query_reports["BOM Item Warehouse"] = {
 	    "on_change": function(query_report){
 		var docName = frappe.query_report_filters_by_name.for.get_value();
 		frappe.call({
-			method: 			    				    					"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.fetch_Records",
+			method: 			    				    					"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.fetch_Records",
 			args: {
          	 		"docName":docName,
         	},
@@ -125,7 +125,7 @@ frappe.query_reports["BOM Item Warehouse"] = {
 		query_report.refresh();
 		}
 		frappe.call({
-			method: 			    				    					"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_sales_order_items",
+			method: 			    				    					"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_sales_order_items",
 			args: {
          	 		"docId":docId,
 				"docName":docName
@@ -349,7 +349,7 @@ return bomDetails;
 function getSalesOrderItemDetails(so_Number){
 var  salesOrderItemsMap= new Map();
 frappe.call({
-		method: 			    				    				"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_sales_order_item_details",
+		method: 			    				    				"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_sales_order_item_details",
 		args: {
          	 	"so_Number":so_Number,
         	},
@@ -385,7 +385,7 @@ return salesOrderItemsMap;
 function getStockRequistionItemQty(so_number,item_code){
 var stockRequistionItemQty = "";
 frappe.call({
-	      method: 			    				    				"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_item_qty",
+	      method: 			    				    				"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_item_qty",
 	      args: {
          	 	"so_Number":so_number,
 			"item_code":item_code,
@@ -404,7 +404,7 @@ return stockRequistionItemQty;
 function getStockRequistionBOMItemQty(bom,item_code){
 var stockRequistionBOMItemQty = "";
 frappe.call({
-	      method: 			    				    				"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_bom_item_qty",
+	      method: 			    				    				"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_bom_item_qty",
 	      args: {
          	 	"bom":bom,
 			"item_code":item_code,
@@ -423,7 +423,7 @@ return stockRequistionBOMItemQty;
 function getBomIitemsLlist(){
 var bomItemsData = "";
 frappe.call({
-	      method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_bom_items_list",
+	      method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_bom_items_list",
 	      async: false,
 	      callback: function(r) 
       	      { 
@@ -439,7 +439,7 @@ return bomItemsData;
 function getStockRequistionBOMItemQtyForProject(projectID, item_code){
 var stockRequistionBOMItemQty = "";
 frappe.call({
-	      method: 			    				    				"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_bom_item_qty_for_project",
+	      method: 			    				    				"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_stock_requistion_bom_item_qty_for_project",
 	      args: {
          	 	"project":projectID,
 			"item_code":item_code,
@@ -603,7 +603,7 @@ function makeStockRequistion(filters,workflowStatus,flag) {
                 var required_on = dialog.fields_dict.required_on.get_value();
                 //var reference_no = dialog.fields_dict.reference_no.get_value();
                 return frappe.call({
-                    method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.make_stock_requisition",
+                    method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.make_stock_requisition",
                     args: {
                         "planning_warehouse": planning_warehouse,
                         "required_date": required_on,
@@ -628,7 +628,7 @@ function makeStockRequistion(filters,workflowStatus,flag) {
 function check_SOItem_Status(item_code){
 var status = "";
 frappe.call({
-	      method: 			    				    				"nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_so_item_status",
+	      method: 			    				    				"nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_so_item_status",
 	      args: {
 			"item_code":item_code
         	},
@@ -702,7 +702,7 @@ fields: dialogArray,
 	console.log(":check_val:"+check_val);
 	if(check_val==1 || check_val_for_all == 1){
 	 frappe.call({
-	 method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.get_bom_list",
+	 method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.get_bom_list",
 	 args: {
          	 "soNumber":soNumber,
 		 "item_code":item_name
@@ -755,7 +755,7 @@ fields: dialogArray,
 function check_for_whole_number(bomNO,qty,query_report){
 var check_for_whole_number = false;
 frappe.call({
-           method: "nhance.nhance.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
+           method: "nhance_cstm.nhance_cstm.report.bom_item_warehouse.bom_item_warehouse.check_for_whole_number",
            args: {
                    "bomno": bomNO
            },

@@ -214,7 +214,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 					type: "POST",
 					method: 'frappe.model.mapper.make_mapped_doc',
 					args: {
-						method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_purchase_order",
+						method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_purchase_order",
 					source_name: cur_frm.doc.name,
 					selected_children: cur_frm.get_selected()
 						},
@@ -314,7 +314,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 
 	make_request_for_quotation: function(){
 		frappe.model.open_mapped_doc({
-			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_request_for_quotation",
+			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_request_for_quotation",
 			frm: cur_frm,
 			run_link_triggers: true
 		});
@@ -322,14 +322,14 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 
 	make_supplier_quotation: function() {
 		frappe.model.open_mapped_doc({
-			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_supplier_quotation",
+			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_supplier_quotation",
 			frm: cur_frm
 		});
 	},
 
 	make_stock_entry: function() {
 		frappe.model.open_mapped_doc({
-			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_stock_entry",
+			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_stock_entry",
 			frm: cur_frm
 		});
 	},
@@ -337,7 +337,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 	raise_production_orders: function() {
 		var me = this;
 		frappe.call({
-			method:"nhance.nhance.doctype.stock_requisition.stock_requisition.raise_production_orders",
+			method:"nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.raise_production_orders",
 			args: {
 				"material_request": me.frm.doc.name
 			},
@@ -490,7 +490,7 @@ return conversion_factor;
 **/
 var conversion_factor;
 frappe.call({
-           method: "nhance.nhance.doctype.stock_requisition.stock_requisition.fetch_conversion_factor",
+           method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.fetch_conversion_factor",
            args: {
                    "purchase_uom": purchase_uom,
 		   "item_code": item_code
@@ -633,7 +633,7 @@ fields: dialogArray,
 		}
 		}
     		frappe.call({
-       			 method: "nhance.nhance.doctype.stock_requisition.stock_requisition.making_PurchaseOrder_For_SupplierItems",
+       			 method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.making_PurchaseOrder_For_SupplierItems",
         		 args: {
           			  "args": list,
            			  "company": company,
@@ -681,7 +681,7 @@ function makePUrchaseOrderForNoSupplierItems(message,items,cur_frm,srID){
 
 function updatePOList(srID,poList){
 frappe.call({
-	method: "nhance.nhance.doctype.stock_requisition.stock_requisition.update_po_list",
+	method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.update_po_list",
 	args: {
          	 "srID":srID,
 		 "po_list":poList
