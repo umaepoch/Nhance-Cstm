@@ -198,6 +198,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 		var itemsArray = new Array();
 		var whole_number_in_stock_transactions_flag = false;
 		var check_args = "";
+		console.log("--------------SREQ ID::"+cur_frm.doc.name);
 		if(!dialog_displayed){
 			var dialog = new frappe.ui.Dialog({
 			title: __("Select Round Type:"),
@@ -208,13 +209,12 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 				{"fieldtype": "Check", "label": __("Do Nothing"), "fieldname": "do_nothing"}
 				],
 				primary_action: function(){
-				console.log("primary_action-----------------");
 				check_args = dialog.get_values();
 				frappe.call({
 					type: "POST",
 					method: 'frappe.model.mapper.make_mapped_doc',
 					args: {
-						method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_purchase_order",
+						method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_purchase_order",
 					source_name: cur_frm.doc.name,
 					selected_children: cur_frm.get_selected()
 						},
@@ -223,15 +223,11 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 					callback: function(r) {
 						if(!r.exc) {
 					frappe.model.sync(r.message);
-					//console.log("result::"+JSON.stringify(r.message))
 					itemsList = r.message.items;
-					//r.message.items = [{}];
 					var index = 0;
 					var no_Supplier_Items = new Array();
 					company = r.message.company;
-					console.log("primary_action------callback-----------");
 					console.log("###################cur_frm.doc.name::"+cur_frm.doc.name);
-					cur_frm.doc.name
 					for(var arrayLength = 0; arrayLength < itemsList.length; arrayLength++){
 						var arr = {};
     						var arrList = [];
@@ -304,7 +300,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 					console.log("no_Supplier_Items::"+no_Supplier_Items);
 					r.message.items = no_Supplier_Items;
 					var msg = r.message;
-					making_PurchaseOrder_For_SupplierItems(supplierList,defaultSupplierItemsMap,company,no_Supplier_Items,msg);
+					making_PurchaseOrder_For_SupplierItems(supplierList,defaultSupplierItemsMap,company,no_Supplier_Items,msg,cur_frm);
 					}
 					}//end of callback fun..
 				});//end of frappe call..
@@ -318,7 +314,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 
 	make_request_for_quotation: function(){
 		frappe.model.open_mapped_doc({
-			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_request_for_quotation",
+			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_request_for_quotation",
 			frm: cur_frm,
 			run_link_triggers: true
 		});
@@ -326,14 +322,14 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 
 	make_supplier_quotation: function() {
 		frappe.model.open_mapped_doc({
-			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_supplier_quotation",
+			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_supplier_quotation",
 			frm: cur_frm
 		});
 	},
 
 	make_stock_entry: function() {
 		frappe.model.open_mapped_doc({
-			method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.make_stock_entry",
+			method: "nhance.nhance.doctype.stock_requisition.stock_requisition.make_stock_entry",
 			frm: cur_frm
 		});
 	},
@@ -341,7 +337,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 	raise_production_orders: function() {
 		var me = this;
 		frappe.call({
-			method:"nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.raise_production_orders",
+			method:"nhance.nhance.doctype.stock_requisition.stock_requisition.raise_production_orders",
 			args: {
 				"material_request": me.frm.doc.name
 			},
@@ -453,7 +449,6 @@ function get_UOM_Details(stock_uom) {
             filters: {
                 uom_name: ["=", stock_uom]
             },
-
             fieldname: ["must_be_whole_number", "needs_to_be_whole_number_in_stock_transactions"]
         },
         async: false,
@@ -468,6 +463,7 @@ return whole_number_in_stock_transactions_flag;
 }
 
 function getConversionFactor(purchase_uom,item_code){
+/**
 var conversion_factor = 0;
     frappe.call({
         method: 'frappe.client.get_value',
@@ -491,7 +487,24 @@ var conversion_factor = 0;
         }
     });
 return conversion_factor;
-}
+**/
+var conversion_factor;
+frappe.call({
+           method: "nhance.nhance.doctype.stock_requisition.stock_requisition.fetch_conversion_factor",
+           args: {
+                   "purchase_uom": purchase_uom,
+		   "item_code": item_code
+           },
+	   async: false,
+           callback: function(r) {
+           if (r.message) {
+		console.log("conversion_factor::"+r.message);
+		conversion_factor = r.message;
+            }
+            }//end of callback fun..
+           })//end of frappe call..
+return conversion_factor;
+}//end of getConversionFactor..
 
 function getPurchaseUom(item_code){
 var purchase_uom = "";
@@ -517,8 +530,10 @@ var purchase_uom = "";
 return purchase_uom;
 }
 
-function making_PurchaseOrder_For_SupplierItems(supplierList,myMap,company,items,message){
+function making_PurchaseOrder_For_SupplierItems(supplierList,myMap,company,items,message,cur_frm){
 console.log("making_PurchaseOrder_For_SupplierItems-----------------");
+var srID = cur_frm.doc.name;
+console.log("po_list::"+cur_frm.doc.po_list);
 /**
 ** Preparing JsonArray Data To Display Dialog box with Suppliers and Tax Template..
 **/
@@ -562,6 +577,7 @@ dialogArray.push(JSON.parse(dialog_fields[i]));
 **/
 console.log("message-----------------");
 if(supplierList.length!=0){
+cur_frm.save("Update");
 var dialog = new frappe.ui.Dialog({																																																																																																																																																																								
 title: __("Select Tax Template For Suppilers"),
 fields: dialogArray,
@@ -606,36 +622,76 @@ fields: dialogArray,
 		}//end of inner for-loop..
     		console.log("###list", list.length);
     		console.log("###list", list);
+		if(list.length!=0){
+		for(var i = 0;i<cur_frm.doc.items.length;i++){
+		for(var j=0;j<list.length;j++){
+		if(cur_frm.doc.items[i].item_code.toString() == list[j].item_code.toString()){
+		cur_frm.doc.items[i].hidden_item_code = list[j].item_code;
+		cur_frm.doc.items[i].hidden_qty = list[j].qty;
+		}
+		}
+		}
+		}
     		frappe.call({
-       			 method: "nhance_cstm.nhance_cstm.doctype.stock_requisition.stock_requisition.making_PurchaseOrder_For_SupplierItems",
+       			 method: "nhance.nhance.doctype.stock_requisition.stock_requisition.making_PurchaseOrder_For_SupplierItems",
         		 args: {
           			  "args": list,
            			  "company": company,
 				  "tax_template": tax_template,
+				  "srID": srID,
        				},
+			async: false,
         		callback: function(r) {
-				//console.log("########-PO::"+r.message);
+				console.log("########-PO::"+r.message);
         		}
    		 }); //end of frappe call.
 	}//end of outer for-loop..
-
 	if(items.length!=0){
-	message.items = items;
-	message.supplier = "";
-	message.supplier_name = "";
-	frappe.get_doc(message.doctype, message.name).__run_link_triggers = true;
-	frappe.set_route("Form", message.doctype, message.name);
+	makePUrchaseOrderForNoSupplierItems(message,items,cur_frm,srID);
 	}
+	cur_frm.save("Update");//updating Stock Requisition..
 	}
 	});//end of dialog box...
 	dialog.show();
 }else{
 	if(items.length!=0){
+	console.log("-----------------items::"+items.length);
+	makePUrchaseOrderForNoSupplierItems(message,items,cur_frm,srID);
+	cur_frm.save("Update");//updating Stock Requisition..
+	}
+}
+}//end of function..
+
+function makePUrchaseOrderForNoSupplierItems(message,items,cur_frm,srID){
+	for(var i=0;i<cur_frm.doc.items.length;i++){
+	for(var j=0;j<items.length;j++){
+	if(cur_frm.doc.items[i].item_code.toString() == items[j].item_code.toString()){
+	cur_frm.doc.items[i].hidden_item_code = items[j].item_code;
+	cur_frm.doc.items[i].hidden_qty = items[j].qty;
+	}
+	}	
+	}//end of for loop..
 	message.items = items;
+	message.stock_requisition_id  = srID;
 	message.supplier = "";
 	message.supplier_name = "";
 	frappe.get_doc(message.doctype, message.name).__run_link_triggers = true;
 	frappe.set_route("Form", message.doctype, message.name);
+}//end of makePUrchaseOrderForNoSupplierItems..
+
+function updatePOList(srID,poList){
+frappe.call({
+	method: "nhance.nhance.doctype.stock_requisition.stock_requisition.update_po_list",
+	args: {
+         	 "srID":srID,
+		 "po_list":poList
+        },
+	async: false,
+	callback: function(r) 
+      	{ 
+	//console.log("");
 	}
-}
-}//end of function..
+	});//end of frappe call..
+}//end of updatePOList..
+
+
