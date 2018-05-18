@@ -54,13 +54,14 @@ def execute(filters=None):
 		new_qty = items['new_qty']
 		excees_qty = items['excees_qty']
 		stock_qty = items['stock_qty']
-			
+		delta_qty=items['delta_qty']	
 		data.append([				
 			    	item_code,
 				old_qty,
 				new_qty,
 				excees_qty,
-				stock_qty
+				stock_qty,
+				delta_qty
 				])
 	
 	
@@ -72,10 +73,11 @@ def get_columns():
 		"""return columns"""
 		columns = [
 		_("Item")+":Link/Item:100",
-		_("Old BOM Item Qty")+"::100",
-		_("New BOM Item Qty")+"::140",
+		_("Old Qty")+"::150",
+		_("New Qty")+"::140",
 		_("Excess Qty")+"::100",
-		_("Stock Qty")+"::100"
+		_("Stock Qty")+"::100",
+		_("Delta Qty")+"::100"
 		 ]
 		return columns
 
@@ -132,12 +134,15 @@ def get_report_items(items_data,new_bom_items,old_bom_items,warehouse):
 			stock_qty = stock_qty[0]['qty']
 		else:
 			stock_qty=0
-		details = {"item_code":data,"new_qty":new_qty,"old_qty":old_qty,"excees_qty":excees_qty,"stock_qty":stock_qty}
+		delta_qty=stock_qty-new_qty
+
+		details = {"item_code":data,"new_qty":new_qty,"old_qty":old_qty,"excees_qty":excees_qty,"stock_qty":stock_qty,"delta_qty":delta_qty}
 		data_for_report.append(details)
 		new_qty=0
 		old_qty=0
 		excess_qty=0
 		stock_qt=0
+		delta_qty=0
 	return data_for_report
 
 @frappe.whitelist()
