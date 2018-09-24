@@ -4,6 +4,5 @@
 
 frappe.query_reports["Summarizing The Invoices"] = {
 	"filters": [
-
 	]
 }
