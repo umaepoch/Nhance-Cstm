@@ -48,7 +48,7 @@ def execute(filters=None):
 def get_columns():
 	"""return columns"""
 	columns = [
-	_("-")+"::100",
+	_("--")+"::100",
 	_("-")+"::100",
 	_("Day")+"::100",
 	_("Month to Date")+"::100",
@@ -181,7 +181,6 @@ def data_appending(invoices_day_month_year_list):
 	data.append(["", "Bank Draft",str(total_company_bank_draft_day),str(total_company_bank_draft_month),str(total_company_bank_draft_year)])
 	data.append(["", "Cheque",str(total_company_cheque_day),str(total_company_cheque_month),str(total_company_cheque_year)])
 	data.append(["", "Credit", str(total_company_credit_day),str(total_company_credit_month),str(total_company_credit_year)])			
-	
 	#start of B2C
 	data.append(["", "", "", ""]) 
 	data.append(["B2C", "Cash", str(total_individual_cash_day),str(total_individual_cash_month),str(total_individual_cash_year)])
@@ -190,7 +189,6 @@ def data_appending(invoices_day_month_year_list):
 	data.append(["", "Bank Draft",str(total_individual_bank_draft_day),str(total_individual_bank_draft_month),str(total_individual_bank_draft_year)])
 	data.append(["", "Cheque",str(total_individual_cheque_day),str(total_individual_cheque_month),str(total_individual_cheque_year)])
 	data.append(["", "Credit",str(total_individual_credit_day),str(total_individual_credit_month),str(total_individual_credit_year)])
-
         #start of Total
 	total_cash_day = float( total_company_cash_day ) + float( total_individual_cash_day )
 	total_credit_card_day = float( total_company_credit_card_day ) + float( total_individual_credit_card_day )
@@ -244,7 +242,7 @@ def get_invoice_amount(invoice_list):
 		payment_term_value = get_payment_term(name)
 
 		if len(payment_term_value)!=0:		
-			payment_term = payment_term_value[0]["payment_term"]
+			payment_term = payment_term_value[0]["mode_of_payment"]
 		
 		if payment_term =="Cash":
 			if customer_type == "Company":
@@ -277,24 +275,25 @@ def get_invoice_amount(invoice_list):
 			elif customer_type == "Individual":
 				total_individual_credit = total_individual_credit + amount
 
-		invoice_amount = {"company" : {"cash" : total_company_cash ,
+		invoice_amount={"company" : {"cash" : total_company_cash ,
 					   "credit_card" : total_company_credit_card,
 					   "neft_rtgs" : total_company_neft_rtgs,
 					   "bank_draft" : total_company_bank_draft,
 					   "cheque" :total_company_cheque,
 					   "credit" : total_company_credit },
-			      	  "individual": { "cash": total_individual_cash,
+			      "individual": { "cash": total_individual_cash,
 				 	      "credit_card":total_individual_credit_card,
 					      "neft_rtgs":total_individual_neft_rtgs,
 					      "bank_draft":total_individual_bank_draft,
 					      "cheque":total_individual_cheque,
 					      "credit":total_individual_credit }
+			
 			        }
 	return invoice_amount
         #end of get amount fun
 	
 def get_payment_term(name):
-	payment_term_value = frappe.db.sql("""select payment_term from `tabPayment Schedule` where parent=%s and docstatus=1""",name,as_dict=1)
+	payment_term_value = frappe.db.sql("""select mode_of_payment from `tabSales Invoice Payment` where parent=%s and docstatus=1""",name,as_dict=1)
 	return payment_term_value
 
 def get_day_wise_invoices():
