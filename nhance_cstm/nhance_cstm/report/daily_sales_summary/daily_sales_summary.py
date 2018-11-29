@@ -269,7 +269,7 @@ def get_invoice_amount(invoice_list):
 		if len(amount_key)!=0:		
 			amount = amount_key[0]["amount"]
 		
-		print "Suresh Checking amount and name *****",amount,name
+		#print "Suresh Checking amount and name *****",amount,name
 		payment_term_value = get_payment_term(name)
 
 		if len(payment_term_value)!=0:		
