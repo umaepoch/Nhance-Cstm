@@ -66,12 +66,15 @@ def data_appending(invoices_day_month_year_list):
 	total_company_bank_draft_day = 0
 	total_company_cheque_day = 0
 	total_company_credit_day = 0
+	total_company_global_day = 0
 	total_individual_cash_day = 0
 	total_individual_credit_card_day = 0
 	total_individual_neft_rtgs_day = 0
 	total_individual_bank_draft_day = 0
 	total_individual_cheque_day = 0
 	total_individual_credit_day = 0
+	total_individual_global_day = 0
+
 
 	total_company_cash_month = 0
 	total_company_credit_card_month = 0
@@ -79,12 +82,14 @@ def data_appending(invoices_day_month_year_list):
 	total_company_bank_draft_month = 0
 	total_company_cheque_month = 0
 	total_company_credit_month = 0
+	total_company_global_month = 0
 	total_individual_cash_month = 0
 	total_individual_credit_card_month = 0
 	total_individual_neft_rtgs_month = 0
 	total_individual_bank_draft_month = 0
 	total_individual_cheque_month = 0
 	total_individual_credit_month = 0
+	total_individual_global_month = 0
 
 	total_company_cash_year = 0
 	total_company_credit_card_year = 0
@@ -92,12 +97,14 @@ def data_appending(invoices_day_month_year_list):
 	total_company_bank_draft_year = 0
 	total_company_cheque_year = 0
 	total_company_credit_year= 0
+	total_company_global_year= 0
 	total_individual_cash_year = 0
 	total_individual_credit_card_year = 0
 	total_individual_neft_rtgs_year = 0
 	total_individual_bank_draft_year = 0
 	total_individual_cheque_year = 0
 	total_individual_credit_year = 0
+	total_individual_global_year = 0
 
 	current_date = getdate(datetime.datetime.now())
 	c_date = frappe.utils.formatdate(current_date, "dd-MM-yyyy")
@@ -125,13 +132,16 @@ def data_appending(invoices_day_month_year_list):
 		total_company_bank_draft_day = company_details["bank_draft"]
 		total_company_cheque_day = company_details["cheque"]
 		total_company_credit_day = company_details["credit"]
+		total_company_global_day =float( total_company_cash_day+ total_company_credit_card_day + total_company_neft_rtgs_day+ total_company_bank_draft_day+ total_company_cheque_day + total_company_credit_day )
 
 		total_individual_cash_day = individual_details["cash"]
 		total_individual_credit_card_day = individual_details["credit_card"]
 		total_individual_neft_rtgs_day = individual_details["neft_rtgs"]
 		total_individual_bank_draft_day = individual_details["bank_draft"]
 		total_individual_cheque_day = individual_details["cheque"]
-		total_individual_credit_day = individual_details["credit"]		
+		total_individual_credit_day = individual_details["credit"]
+		total_individual_global_day =float ( total_individual_cash_day+total_individual_credit_card_day +total_individual_neft_rtgs_day +total_individual_bank_draft_day +total_individual_cheque_day + total_individual_credit_day)
+
 	#Month_data
 	if invoice_list_for_month is not None:
 		invoice_type="Month"
@@ -145,13 +155,16 @@ def data_appending(invoices_day_month_year_list):
 		total_company_bank_draft_month = company_details["bank_draft"]
 		total_company_cheque_month = company_details["cheque"]
 		total_company_credit_month = company_details["credit"]
+		total_company_global_month = float ( total_company_cash_month+ total_company_credit_card_month + total_company_neft_rtgs_month+ + total_company_bank_draft_month + total_company_cheque_month + total_company_credit_month)
 
 		total_individual_cash_month = individual_details["cash"]
 		total_individual_credit_card_month = individual_details["credit_card"]
 		total_individual_neft_rtgs_month = individual_details["neft_rtgs"]
 		total_individual_bank_draft_month = individual_details["bank_draft"]
 		total_individual_cheque_month = individual_details["cheque"]
-		total_individual_credit_month = individual_details["credit"]		
+		total_individual_credit_month = individual_details["credit"]
+		total_individual_global_month = float(total_individual_cash_month + total_individual_credit_card_month+total_individual_neft_rtgs_month + total_individual_bank_draft_month+ total_individual_cheque_month+total_individual_credit_month)
+		
 	#Year data
 	if invoice_list_for_year is not None:
 		invoice_type="Year"
@@ -165,13 +178,16 @@ def data_appending(invoices_day_month_year_list):
 		total_company_bank_draft_year = company_details["bank_draft"]
 		total_company_cheque_year = company_details["cheque"]
 		total_company_credit_year = company_details["credit"]
+		total_company_global_year =float ( total_company_cash_year+total_company_credit_card_year +total_company_neft_rtgs_year + total_company_bank_draft_year+total_company_cheque_year +total_company_credit_year)
 
 		total_individual_cash_year = individual_details["cash"]
 		total_individual_credit_card_year = individual_details["credit_card"]
 		total_individual_neft_rtgs_year = individual_details["neft_rtgs"]
 		total_individual_bank_draft_year = individual_details["bank_draft"]
 		total_individual_cheque_year = individual_details["cheque"]
-		total_individual_credit_year = individual_details["credit"]		
+		total_individual_credit_year = individual_details["credit"]
+		total_individual_global_year = float( total_individual_cash_year+ total_individual_credit_card_year+total_individual_neft_rtgs_year + total_individual_bank_draft_year+total_individual_cheque_year +total_individual_credit_year)
+		
 	#start of B2B	
 	data.append(["","",str(c_date),(str(current_month) + ", " + str(current_year)),("FY" + str(current_year) + "-"+ str(current_year + 1))]) 
 	data.append(["", "", "", ""])
@@ -180,7 +196,9 @@ def data_appending(invoices_day_month_year_list):
 	data.append(["", "NEFT/RTGS",str(total_company_neft_rtgs_day),str(total_company_neft_rtgs_month),str(total_company_neft_rtgs_year)])
 	data.append(["", "Bank Draft",str(total_company_bank_draft_day),str(total_company_bank_draft_month),str(total_company_bank_draft_year)])
 	data.append(["", "Cheque",str(total_company_cheque_day),str(total_company_cheque_month),str(total_company_cheque_year)])
-	data.append(["", "Credit", str(total_company_credit_day),str(total_company_credit_month),str(total_company_credit_year)])			
+	data.append(["", "Credit", str(total_company_credit_day),str(total_company_credit_month),str(total_company_credit_year)])		
+	data.append(["", "Total", str(total_company_global_day),str(total_company_global_month),str(total_company_global_year)])		
+	
 	#start of B2C
 	data.append(["", "", "", ""]) 
 	data.append(["B2C", "Cash", str(total_individual_cash_day),str(total_individual_cash_month),str(total_individual_cash_year)])
@@ -189,6 +207,8 @@ def data_appending(invoices_day_month_year_list):
 	data.append(["", "Bank Draft",str(total_individual_bank_draft_day),str(total_individual_bank_draft_month),str(total_individual_bank_draft_year)])
 	data.append(["", "Cheque",str(total_individual_cheque_day),str(total_individual_cheque_month),str(total_individual_cheque_year)])
 	data.append(["", "Credit",str(total_individual_credit_day),str(total_individual_credit_month),str(total_individual_credit_year)])
+	data.append(["", "Total",str(total_individual_global_day),str(total_individual_global_month),str(total_individual_global_year)])
+
         #start of Total
 	total_cash_day = float( total_company_cash_day ) + float( total_individual_cash_day )
 	total_credit_card_day = float( total_company_credit_card_day ) + float( total_individual_credit_card_day )
@@ -196,6 +216,8 @@ def data_appending(invoices_day_month_year_list):
 	total_bank_draft_day = float( total_company_bank_draft_day ) + float( total_individual_bank_draft_day )
 	total_cheque_day = float( total_company_cheque_day ) + float( total_individual_cheque_day )
 	total_credit_day = float( total_company_credit_day )+ float( total_individual_credit_day )
+	total_global_day = float ( total_cash_day+total_credit_card_day + total_neft_rtgs_day+total_bank_draft_day + total_cheque_day+total_credit_day )
+	
 
 	total_cash_month = float( total_company_cash_month ) + float( total_individual_cash_month )
 	total_credit_card_month =float( total_company_credit_card_month ) + float( total_individual_credit_card_month )
@@ -203,6 +225,7 @@ def data_appending(invoices_day_month_year_list):
 	total_bank_draft_month = float( total_company_bank_draft_month ) + float( total_individual_bank_draft_month )
 	total_cheque_month = float( total_company_cheque_month ) + float( total_individual_cheque_month )
 	total_credit_month =float( total_company_credit_month ) + float( total_individual_credit_month )
+	total_global_month =float ( total_cash_month+ total_credit_card_month+total_neft_rtgs_month +total_bank_draft_month + total_cheque_month+total_credit_month )
 
 	total_cash_year = float(total_company_cash_year) + float(total_individual_cash_year)
 	total_credit_card_year = float(total_company_credit_card_year) + float(total_individual_credit_card_year)
@@ -210,6 +233,7 @@ def data_appending(invoices_day_month_year_list):
 	total_bank_draft_year = float(total_company_bank_draft_year) + float(total_individual_bank_draft_year)
 	total_cheque_year = float(total_company_cheque_year) + float(total_individual_cheque_year)
 	total_credit_year = float(total_company_credit_year) + float(total_individual_credit_year)
+	total_global_year = float (total_cash_year +total_credit_card_year +total_neft_rtgs_year +total_bank_draft_year + total_cheque_year+total_credit_year)
 	
 	data.append(["", "", "", ""])
 	data.append(["Total", "Cash", str(total_cash_day),str(total_cash_month),str(total_cash_year)])
@@ -218,6 +242,7 @@ def data_appending(invoices_day_month_year_list):
 	data.append(["", "Bank Draft",str(total_bank_draft_day),str(total_bank_draft_month),str(total_bank_draft_year)])
 	data.append(["", "Cheque",str(total_cheque_day),str(total_cheque_month),str(total_cheque_year)])
 	data.append(["", "Credit",str( total_credit_day),str(total_credit_month),str(total_credit_year)])
+	data.append(["", "Total",str( total_global_day),str(total_global_month),str(total_global_year)])
 
 def get_invoice_amount(invoice_list):
 	total_company_cash = 0
@@ -235,10 +260,16 @@ def get_invoice_amount(invoice_list):
 	
 	for invoice_data in invoice_list: 
 		payment_term = ""
+		amount = 0
 		customer_type = invoice_data['customer_type']
-		amount = invoice_data['net_total']
 		status = invoice_data['status']
 		name = invoice_data['name']
+
+		amount_key = get_payment_amount(name)
+		if len(amount_key)!=0:		
+			amount = amount_key[0]["amount"]
+		
+		print "Suresh Checking amount and name *****",amount,name
 		payment_term_value = get_payment_term(name)
 
 		if len(payment_term_value)!=0:		
@@ -269,7 +300,7 @@ def get_invoice_amount(invoice_list):
 				total_company_cheque = total_company_cheque + amount
 			elif customer_type == "Individual":
 				total_individual_cheque = total_individual_cheque + amount
-		if payment_term =="Credit":
+		if payment_term =="CREDIT":
 			if customer_type == "Company":
 				total_company_credit = total_company_credit + amount
 			elif customer_type == "Individual":
@@ -289,12 +320,19 @@ def get_invoice_amount(invoice_list):
 					      "credit":total_individual_credit }
 			
 			        }
+
 	return invoice_amount
         #end of get amount fun
 	
 def get_payment_term(name):
 	payment_term_value = frappe.db.sql("""select mode_of_payment from `tabSales Invoice Payment` where parent=%s and docstatus=1""",name,as_dict=1)
 	return payment_term_value
+
+def get_payment_amount(name):
+	payment_amount = frappe.db.sql("""select amount from `tabSales Invoice Payment` where parent=%s and docstatus=1""",name,as_dict=1)
+	return payment_amount
+
+
 
 def get_day_wise_invoices():
 	current_date = getdate(datetime.datetime.now())
@@ -323,6 +361,8 @@ def get_year_wise_invoices():
 	from_date = str(current_year) + "-04-01"
 	to_date = get_last_day(d)
 	invoice_details = frappe.db.sql("""select customer_type, name, net_total, status from `tabSales Invoice` where posting_date >= %s and 
+					posting_date <= %s and docstatus=1""", (from_date, to_date), as_dict=1)
+        check = frappe.db.sql("""select sum(net_total) from `tabSales Invoice` where posting_date >= %s and 
 					posting_date <= %s and docstatus=1""", (from_date, to_date), as_dict=1)
 	if len(invoice_details)!=0:
 		return invoice_details
