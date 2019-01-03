@@ -92,8 +92,11 @@ def get_month_wise_invoices():
 def get_year_wise_invoices():
 	now = datetime.datetime.now()
 	current_year = now.year
-	from_date = str(current_year) + "-04-01"
+	fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	fiscal_year_start = fiscal_year[:4]
+	from_date = str(fiscal_year_start) + "-04-01"
 	to_date = getdate(datetime.datetime.now())
+
 
 	individual_year = 0
 	company_year = 0
@@ -110,8 +113,7 @@ def get_year_wise_invoices():
 
 	total_year = individual_year + company_year
 
-	data.append([ ("FY" + str(current_year) + "-"+ str(current_year + 1)), individual_year,company_year, total_year])
-
+	data.append([ ("FY" + fiscal_year_start + "-"+ str(current_year)), individual_year,company_year, total_year])
 
 def get_first_day(dt, d_years=0, d_months=0):
     # d_years, d_months are "deltas" to apply to dt
