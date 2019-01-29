@@ -70,9 +70,8 @@ def get_invoice_amount(invoice_list,invoice_type):
 	fiscal_year_start = fiscal_year[:4]
 	for invoice_data in invoice_list:
 		customer_namee =invoice_data['customer_name']
-		customer_type_key = get_customer_type(customer_namee)
-		customer_type = customer_type_key[0]['customer_type']
-
+		customer_type = get_customer_type(customer_namee)
+		print "Suresh Checking *************** customer_type from for",customer_type
 
 		amount = invoice_data['net_total']
 		status = invoice_data['status']
@@ -132,7 +131,7 @@ def get_first_day(dt, d_years=0, d_months=0):
 	return date(y+a, m+1, 1)
 
 def  get_customer_type( customer_name ):
-	customer_type = frappe.db.sql("""select customer_type from `tabCustomer` where customer_name = %s""", (customer_name),as_dict=1)
+	customer_type = frappe.db.get_value("Customer",customer_name,'customer_type')
 	return customer_type
 
 
